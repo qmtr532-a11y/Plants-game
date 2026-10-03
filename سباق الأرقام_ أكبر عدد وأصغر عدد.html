@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>سباق الأرقام: أكبر عدد وأصغر عدد</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&display=swap">
+<style>
+:root{--sky:#d6ecf0;--ink:#1c2a33;--road:#37444f;--line:#f4d35e;--paper:#fffaf0;--good:#1f9d63;--bad:#d6453d;--sun:#f4a52b;--chip-max:#1f9d63;--chip-min:#2e6fd6;color-scheme:light dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sky:#13232d;--ink:#eef3f5;--road:#222c34;--paper:#22313b;--chip-max:#43c488;--chip-min:#6fa3f5}}
+:root[data-theme="dark"]{--sky:#13232d;--ink:#eef3f5;--road:#222c34;--paper:#22313b;--chip-max:#43c488;--chip-min:#6fa3f5}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sky);color:var(--ink);font-family:'Baloo Bhaijaan 2',Tahoma,'Segoe UI',sans-serif;font-size:18px;min-height:100vh}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:clamp(2rem,8vw,3.2rem);margin:.2em 0;font-weight:800}
+.card{background:var(--paper);border-radius:22px;padding:18px 20px;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn{font:inherit;font-weight:800;font-size:1.25rem;border:0;border-radius:16px;background:var(--sun);color:#2a1a00;padding:.5em 1.6em;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700;margin-bottom:8px}
+.bar{height:12px;background:rgba(0,0,0,.15);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.bar i{display:block;height:100%;width:0;background:var(--sun);transition:width .4s}
+.q{text-align:center;font-size:clamp(1.3rem,5.5vw,1.9rem);font-weight:800;line-height:1.7}
+.chip{display:inline-block;color:#fff;border-radius:12px;padding:0 .6em;margin:0 .15em}
+.chip.max{background:var(--chip-max)}.chip.min{background:var(--chip-min)}
+.road{background:var(--road);border-radius:20px;margin:14px 0;overflow:hidden;direction:ltr}
+.lane{display:flex;justify-content:center;padding:10px 0 6px;border-bottom:4px dashed var(--line)}
+.lane:last-child{border-bottom:0}
+.car{background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;font:inherit;animation:in .8s cubic-bezier(.2,.8,.3,1) both;animation-delay:var(--d)}
+.board{background:#fffaf0;color:#1c2a33;border:4px solid var(--c);border-radius:12px;font-weight:800;font-size:clamp(2rem,10vw,3rem);line-height:1.25;padding:0 .55em;letter-spacing:.06em;margin-bottom:-6px;position:relative;z-index:1}
+.car svg{width:min(52vw,210px);height:auto}
+.car:hover .board{transform:translateY(-3px)}
+.car.bad{animation:shake .4s;opacity:.4;cursor:default}
+.car.go{animation:out .9s ease-in forwards}
+.car.dim{opacity:.35;transition:opacity .4s}
+.car.go .board{border-color:var(--good);box-shadow:0 0 0 4px var(--good)}
+@keyframes in{from{transform:translateX(120vw)}}
+@keyframes out{to{transform:translateX(-130vw)}}
+@keyframes shake{25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.msg{min-height:3.4em;text-align:center;font-weight:700;font-size:1.15rem;line-height:1.6}
+.msg.ok{color:var(--good)}.msg.no{color:var(--bad)}
+#start,#end{text-align:center}
+.stars{font-size:3rem;letter-spacing:.1em}
+.big{font-size:2.4rem;font-weight:800}
+.demo{display:flex;justify-content:center;gap:10px;direction:ltr;margin:14px 0}
+.demo b{background:var(--paper);border:4px solid var(--sun);border-radius:12px;padding:0 .5em;font-size:1.8rem}
+@media (prefers-reduced-motion:reduce){.car,.car.bad,.car.go{animation-duration:.01s}.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<section id="start" class="card">
+  <h1>🚗 سباق الأرقام</h1>
+  <p>كل سيارة تحمل عددًا. اضغطي على السيارة الصحيحة لتفوز بالسباق!</p>
+  <div class="demo"><b>٣٤٨</b><b>٧٢٥</b><b>٥٠٦</b></div>
+  <p>١٠ أسئلة: أعداد من رقمين، ثم ثلاثة أرقام، ثم أربعة أرقام.</p>
+  <button class="btn" id="go">ابدئي السباق</button>
+</section>
+
+<section id="play" hidden>
+  <div class="top"><span id="rn"></span><span id="sc"></span></div>
+  <div class="bar"><i id="pb"></i></div>
+  <div class="card q" id="q" aria-live="polite"></div>
+  <div class="road" id="road"></div>
+  <div class="msg" id="msg" aria-live="polite"></div>
+</section>
+
+<section id="end" class="card" hidden>
+  <h1>أحسنتِ! 🏁</h1>
+  <div class="stars" id="stars"></div>
+  <div class="big" id="final"></div>
+  <p id="note"></p>
+  <button class="btn" id="again">العبي مرة أخرى</button>
+</section>
+</main>
+
+<script>
+const AR='٠١٢٣٤٥٦٧٨٩', ar=n=>String(n).replace(/\d/g,d=>AR[d]);
+const PL=['الآحاد','العشرات','المئات','الآلاف'];
+const COL=['#e4572e','#2e86ab','#5fa03e','#f4a52b','#8e5ea2'];
+const TOTAL=10, $=id=>document.getElementById(id);
+let r, score, mistakes, locked, cur;
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+function gen(i){
+  const d=i<3?2:i<7?3:4, k=i<3?3:4, set=new Set();
+  const share=i>=3&&Math.random()<.55;
+  const pre=share?rnd(Math.pow(10,d-3),Math.pow(10,d-2)-1):0;
+  let guard=0;
+  while(set.size<k&&guard++<200){
+    set.add(share?pre*100+rnd(0,99):rnd(Math.pow(10,d-1),Math.pow(10,d)-1));
+  }
+  return [...set];
+}
+function carSVG(c){
+  return `<svg viewBox="0 0 170 76" aria-hidden="true">
+  <path d="M8 50c0-9 6-13 16-15l22-3 14-18c2-2 4-3 7-3h58c4 0 7 2 9 5l12 17 14 3c7 2 10 6 10 13v6H8z" fill="${c}"/>
+  <path d="M56 32l11-13h28v13zM103 32V19h14l10 13z" fill="#cfeaf5"/>
+  <circle cx="14" cy="43" r="5" fill="#ffe27a"/><rect x="152" y="40" width="8" height="6" rx="2" fill="#ff8a7a"/>
+  <circle cx="44" cy="58" r="13" fill="#1c2a33"/><circle cx="44" cy="58" r="5" fill="#aab6bd"/>
+  <circle cx="126" cy="58" r="13" fill="#1c2a33"/><circle cx="126" cy="58" r="5" fill="#aab6bd"/></svg>`;
+}
+function show(id){['start','play','end'].forEach(s=>$(s).hidden=s!==id)}
+function newGame(){r=0;score=0;mistakes=0;show('play');round()}
+function round(){
+  locked=false;
+  const nums=gen(r), type=r===0?'max':(Math.random()<.5?'max':'min');
+  cur={nums,type,ans:type==='max'?Math.max(...nums):Math.min(...nums),wrong:false};
+  $('rn').textContent='السؤال '+ar(r+1)+' من '+ar(TOTAL);
+  $('sc').textContent='النقاط: '+ar(score);
+  $('pb').style.width=(r/TOTAL*100)+'%';
+  $('q').innerHTML='أيّ سيارة تحمل <span class="chip '+type+'">'+(type==='max'?'▲ أكبر':'▼ أصغر')+'</span> عدد؟';
+  $('msg').textContent='';$('msg').className='msg';
+  $('road').innerHTML='';
+  nums.forEach((n,j)=>{
+    const lane=document.createElement('div');lane.className='lane';
+    const b=document.createElement('button');
+    b.className='car';b.style.setProperty('--c',COL[j%5]);b.style.setProperty('--d',(j*.15)+'s');
+    b.setAttribute('aria-label','سيارة تحمل العدد '+ar(n));
+    b.innerHTML='<span class="board">'+ar(n)+'</span>'+carSVG(COL[j%5]);
+    b.onclick=()=>pick(b,n);
+    lane.appendChild(b);$('road').appendChild(lane);
+  });
+}
+function pick(btn,n){
+  if(locked||btn.classList.contains('bad'))return;
+  const m=$('msg');
+  if(n===cur.ans){
+    locked=true;score+=cur.wrong?5:10;$('sc').textContent='النقاط: '+ar(score);
+    document.querySelectorAll('.car').forEach(c=>{if(c!==btn)c.classList.add('dim')});
+    btn.classList.add('go');
+    m.className='msg ok';m.textContent=cur.wrong?'صحيح! 🎉':'ممتاز! أحسنتِ ⭐';
+    setTimeout(()=>{r++;r<TOTAL?round():finish()},1500);
+  }else{
+    cur.wrong=true;mistakes++;btn.classList.add('bad');
+    const a=String(n),b=String(cur.ans);let i=0;while(a[i]===b[i])i++;
+    const place=PL[a.length-1-i];
+    m.className='msg no';
+    m.textContent=(i>0?'الخانات الأولى متشابهة. ':'')+'قارني خانة '+place+': '+ar(a[i])+' و'+ar(b[i])+'. جرّبي مرة أخرى!';
+  }
+}
+function finish(){
+  show('end');
+  const s=mistakes<=2?3:mistakes<=5?2:1;
+  $('stars').textContent='⭐'.repeat(s)+'☆'.repeat(3-s);
+  $('final').textContent='نقاطك: '+ar(score)+' من '+ar(TOTAL*10);
+  $('note').textContent=s===3?'أنتِ بطلة المقارنة!':s===2?'عمل رائع! تدرّبي أكثر لتحصلي على ثلاث نجوم.':'استمري في المحاولة، ابدئي دائمًا بمقارنة أكبر خانة.';
+}
+$('go').onclick=newGame;$('again').onclick=newGame;
+</script>
+</body>
+</html>
